@@ -53,6 +53,10 @@ class PhotoFile
    def make_thumbnail
       system("convert #{CONVERT_OPT} #{filename} #{thumbname}") || raise("convert fails")
    end
+
+   def size
+      FileTest.size @filename
+   end
 end
 
 # 複数の画像からなるアルバムを管理するクラス
@@ -207,6 +211,8 @@ class PhotoAlbum
 	 param["link_chapter"] += "<link rel=\"chapter\" href=\"#{m}.html\" title=\"#{m}\">\n"
       end
       param['now'] = Time.now.strftime "%Y-%m-%d %H:%M:%S"
+      param['total'] = @photos.size + 1
+      param['total_size'] = total_size / 1024 / 1000
 
       template = TemplateFile.new("#{TEMPLATE_DIR}/indexpage.html")
       html = File.open("index.html", "w")
@@ -244,5 +250,14 @@ class PhotoAlbum
 	 stat
       }
       return result
+   end
+
+   # 合計のサイズ
+   def total_size
+      total = 0
+      @photos.each do |f|
+	 total += f.size
+      end
+      return total
    end
 end
