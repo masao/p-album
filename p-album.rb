@@ -174,13 +174,13 @@ class PhotoAlbum
 	    param['prev'] = "前月"
 	 else
 	    param['prev'] = "<a href=\"#{month[i-1]}.html\">前月</a>"
-	    param['link_prev'] = "<link rel=\"prev\" href=\"#{month[i-1]}.html\">"
+	    param['link_prev'] = "<link rel=\"prev\" href=\"#{month[i-1]}.html\" title=\"#{month[i-1]}\">"
 	 end
 	 if i == month.size - 1 then
 	    param['next'] = "翌月"
 	 else
 	    param['next'] = "<a href=\"#{month[i+1]}.html\">翌月</a>"
-	    param['link_next'] = "<link rel=\"next\" href=\"#{month[i-1]}.html\">"
+	    param['link_next'] = "<link rel=\"next\" href=\"#{month[i-1]}.html\" title=\"#{month[i+1]}\">"
 	 end
 
 	 template = TemplateFile.new("#{TEMPLATE_DIR}/monthlypage.html")
@@ -198,7 +198,7 @@ class PhotoAlbum
       }
       param["monthly_list"] = get_monthly_list(monthbody)
       monthbody.keys.sort.each {|m|
-	 param["link_chapter"] += "<link rel=\"chapter\" href=\"#{m}.html\">\n"
+	 param["link_chapter"] += "<link rel=\"chapter\" href=\"#{m}.html\" title=\"#{m}\">\n"
       }
       param['now'] = Time.now.strftime "%Y-%m-%d %H:%M:%S"
 
