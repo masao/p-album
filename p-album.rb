@@ -72,7 +72,7 @@ class PhotoAlbum
 
    # 文字列の置換
    def auto_replace (info)
-      info.keys.each {|k|
+      info.keys.each do |k|
 	 if info[k].class == String
 	    info[k].gsub!(/\[([^\]]+)\]/) {
 	       match = $1
@@ -85,11 +85,11 @@ class PhotoAlbum
 	       end
 	    }
 	 end
-      }
+      end
    end
 
    def make_htmlpages
-      @photos.each_index {|i|
+      @photos.each_index do |i|
 	 puts @photos[i]
 	 fileinfo = Hash[@photos[i].info]
 	 if fileinfo.has_key?("convert")
@@ -132,13 +132,13 @@ class PhotoAlbum
 	 template = TemplateFile.new("#{TEMPLATE_DIR}/htmlpage.html")
 	 html = File.open(@photos[i].htmlname, "w")
 	 html.print template.expand(fileinfo.update(@conf))
-      }
+      end
    end
 
    def make_monthlypage
       daybody = Hash.new("")
       monthbody = Hash.new(0)
-      @photos.each {|photo|
+      @photos.each do |photo|
 	 datetime = photo.info["datetime"]
 	 size = ImageSize.new(open(photo.thumbname)).html_imgsize
 	 if photo.info.has_key?("title") then
@@ -153,10 +153,10 @@ class PhotoAlbum
 	 daybody[day] += " title=\"#{photo.info["title"]}\"" if photo.info.has_key?("title")
 	 daybody[day] += "><img src=\"#{photo.thumbname}\" #{size} alt=\"#{alt_title}\"></a>\n"
 	 monthbody[month] += 1
-      }
+      end
 
       month = monthbody.keys.sort
-      month.each_index{|i|
+      month.each_index do |i|
 	 days = daybody.keys.sort.select {|e|
 	    e =~ /^#{month[i]}/
 	 }
@@ -186,20 +186,20 @@ class PhotoAlbum
 	 template = TemplateFile.new("#{TEMPLATE_DIR}/monthlypage.html")
 	 html = File.open("#{month[i]}.html", "w")
 	 html.print template.expand(param.update(@conf))
-      }
+      end
 
       # index.html に最新の数日分を書き出す。
       param = Hash.new("")
       param["recent"] = RECENT
       days = daybody.keys.sort.reverse
-      days[0 ... RECENT].each{|day|
+      days[0 ... RECENT].each do |day|
 	 param["body"] += "<div class=\"day-header\">#{day}</div>\n"
 	 param["body"] += "<div class=\"day-body\">#{daybody[day]}</div>\n"
-      }
+      end
       param["monthly_list"] = get_monthly_list(monthbody)
-      monthbody.keys.sort.each {|m|
+      monthbody.keys.sort.each do |m|
 	 param["link_chapter"] += "<link rel=\"chapter\" href=\"#{m}.html\" title=\"#{m}\">\n"
-      }
+      end
       param['now'] = Time.now.strftime "%Y-%m-%d %H:%M:%S"
 
       template = TemplateFile.new("#{TEMPLATE_DIR}/indexpage.html")
@@ -210,7 +210,7 @@ class PhotoAlbum
    def get_monthly_list (monthbody)
       result = ""
       prev_year = 0
-      monthbody.keys.sort.each {|m|
+      monthbody.keys.sort.each do |m|
 	 year, month = m[0..3], m[5..6]
 	 if year != prev_year then
 	    # year changed!
@@ -219,7 +219,7 @@ class PhotoAlbum
 	    prev_year = year
 	 end
 	 result += "<a href=\"#{m}.html\">#{MONTHNAMES[month.to_i]}</a>\n"
-      }
+      end
       return result
    end
 
