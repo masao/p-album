@@ -9,9 +9,10 @@
 # Ex: /home/yto/e-01.txt --> 2001-06-12T14:32:10.txt
 
 ## Requirements:
-# libexif: <http://libexif.sourceforge.net/>
 # Ruby: <http://www.ruby-lang.org/>
-# ruby-libexif パッケージ: <http://tam.0xfa.com/ruby-libexif/>
+# libexif: <http://libexif.sourceforge.net/>
+# ruby-libexif: <http://tam.0xfa.com/ruby-libexif/>
+# YAML4r: <http://yaml4r.sourceforge.net/>
 
 ## ToDo:
 # 同一の時刻（秒単位）のファイルが既にある場合をどうするかは検討中…。
@@ -59,8 +60,10 @@ def main
 
     yaml = YAML::Store.new("metadata.yaml", :SortKeys => true)
     yaml.transaction do
-      yaml[new_fname] = { "datetime" => datetime }
+      yaml[new_fname] = Hash.new() unless yaml.root?(new_fname)
+      yaml[new_fname]["datetime"] = datetime
     end
   end
 end
+
 main
