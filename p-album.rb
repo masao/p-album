@@ -1,14 +1,8 @@
 #! /usr/local/bin/ruby
 # $Id$
 
-# index.htmlで、最近 N 日分を表示するか
-RECENT = 5
-
 # サムネールを置くディレクトリ
 THUMBS_DIR = "thumbs"
-
-# HTMLの雛型のあるディレクトリ
-TEMPLATE_DIR = 'templates'
 
 # サムネール生成時の convert コマンドのオプション
 CONVERT_OPT = "-geometry '96x96>'"
@@ -46,7 +40,7 @@ class PhotoFile
    end
 
    def to_s
-      return @filename
+      @filename
    end
 
    # サムネールの生成を行う
@@ -138,7 +132,7 @@ class PhotoAlbum
 	    fileinfo['link_next'] = "<link rel=\"next\" href=\"#{html}\">"
 	 end
 
-	 template = TemplateFile.new("#{TEMPLATE_DIR}/htmlpage.html")
+	 template = TemplateFile.new("#{@conf["TEMPLATE_DIR"]}/htmlpage.html")
 	 html = File.open(@photos[i].htmlname, "w")
 	 html.print template.expand(fileinfo.update(@conf))
       end
@@ -193,16 +187,15 @@ class PhotoAlbum
 	    param['link_next'] = "<link rel=\"next\" href=\"#{month[i-1]}.html\" title=\"#{month[i+1]}\">"
 	 end
 
-	 template = TemplateFile.new("#{TEMPLATE_DIR}/monthlypage.html")
+	 template = TemplateFile.new("#{@conf["TEMPLATE_DIR"]}/monthlypage.html")
 	 html = File.open("#{month[i]}.html", "w")
 	 html.print template.expand(param.update(@conf))
       end
 
       # index.html に最新の数日分を書き出す。
       param = Hash.new("")
-      param["recent"] = RECENT
       days = daybody.keys.sort.reverse
-      days[0 ... RECENT].each do |day|
+      days[0 ... @conf["RECENT"]].each do |day|
 	 param["body"] += "<div class=\"day-header\">#{day}</div>\n"
 	 param["body"] += "<div class=\"day-body\">#{daybody[day]}</div>\n"
       end
@@ -214,7 +207,7 @@ class PhotoAlbum
       param['total'] = @photos.size + 1
       param['total_size'] = total_size / 1024 / 1000
 
-      template = TemplateFile.new("#{TEMPLATE_DIR}/indexpage.html")
+      template = TemplateFile.new("#{@conf["TEMPLATE_DIR"]}/indexpage.html")
       html = File.open("index.html", "w")
       html.print template.expand(param.update(@conf))
    end
