@@ -96,7 +96,7 @@ class PhotoAlbum
       tempfile.close
       unless File.exist?(fname) && File.cmp(fname, tempfile.path)
 	 File.cp(tempfile.path, fname)
-	 File.chmod(0644)
+	 File.chmod(0644, fname)
 	 puts fname
       end
    end
