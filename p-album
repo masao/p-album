@@ -41,7 +41,7 @@ def htmlname (fname)
 end
 
 def find_photos
-  files = Dir.entries(".").select {|f|
+  files = YAML.load(File.open "metadata.yaml").keys.select {|f|
     f =~ /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.jpg$/
   }
   return files.sort
@@ -71,31 +71,40 @@ def make_htmlpages(files)
   metadata = YAML.load( File.open("metadata.yaml") )
   files.each_index {|i|
     puts files[i]
-    if FileTest.exist?(thumbname(files[i])) == false || Opt['force_thumbs']
+    fileinfo = metadata[files[i]]
+    if fileinfo.has_key?("convert")
+      unless FileTest.exist?(files[i] + ".orig")
+	File.mv(files[i], files[i] + ".orig")
+      end
+      unless FileTest.exist?(files[i])
+	system("convert #{fileinfo["convert"]} #{files[i]}.orig #{files[i]}") || raise("convert fails")
+      end
+    end
+
+    if FileTest.exist?(thumbname(files[i])) == false || File.mtime(thumbname(files[i])) < File.mtime(files[i])
       make_thumbnail(files[i])
     end
 
-    param = metadata[files[i]]
-    datetime = param['datetime']
-    param['datetime'] = datetime.strftime("%Y-%m-%d %H:%M")
-    param['date'] = datetime.strftime("%Y-%m-%d")
-    param['monthlyindex'] = datetime.strftime("%Y-%m.html")
-    param['image'] = "./#{files[i]}"
-    param['imagesize'] = html_imgsize(files[i])
+    datetime = fileinfo['datetime']
+    fileinfo['datetime'] = datetime.strftime("%Y-%m-%d %H:%M")
+    fileinfo['date'] = datetime.strftime("%Y-%m-%d")
+    fileinfo['monthlyindex'] = datetime.strftime("%Y-%m.html")
+    fileinfo['image'] = "./#{files[i]}"
+    fileinfo['imagesize'] = html_imgsize(files[i])
     if i == 0 then
-      param['prev'] = "前の写真"
+      fileinfo['prev'] = "前の写真"
     else
       html = htmlname(files[i-1])
-      param['prev'] = "<a href=\"#{html}\">前の写真</a>"
+      fileinfo['prev'] = "<a href=\"#{html}\">前の写真</a>"
     end
     if i == files.size-1 then
-      param['next'] = "次の写真"
+      fileinfo['next'] = "次の写真"
     else
       html = htmlname(files[i+1])
-      param['next'] = "<a href=\"#{html}\">次の写真</a>"
+      fileinfo['next'] = "<a href=\"#{html}\">次の写真</a>"
     end
 
-    template = expand_template("#{TEMPLATE_DIR}/htmlpage.html", param)
+    template = expand_template("#{TEMPLATE_DIR}/htmlpage.html", fileinfo)
     html = File.open(htmlname(files[i]), "w")
     html.print template
   }
@@ -187,7 +196,7 @@ end
 def main
   while ARGV[0] =~ /^-/
     optstr = ARGV.shift
-    Opt['force_thumbnail'] = true if optstr == "-f"
+    Opt['force_thumbs'] = true if optstr == "-f"
   end
   files = find_photos()
   make_htmlpages(files)
