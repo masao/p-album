@@ -29,7 +29,7 @@ end
 # Exif にある日付情報を Time オブジェクトにして返す。
 def exif2time (exif_datetime)
   ary = exif_datetime.split(/\D+/)
-  return Time.local(ary[0], ary[1], ary[2], ary[3], ary[4], ary[5])
+  return Time.local(*ary)
 end
 
 def main
