@@ -118,7 +118,7 @@ class PhotoAlbum
 	 auto_replace(fileinfo)
 
 	 datetime = fileinfo['datetime']
-	 fileinfo['datetime'] = datetime.strftime("%Y-%m-%d %H:%M")
+	 fileinfo['datetime'] = datetime.strftime("%Y-%m-%d %H:%M:%S")
 	 fileinfo['date'] = datetime.strftime("%Y-%m-%d")
 	 fileinfo['monthlyindex'] = datetime.strftime("%Y-%m.html")
 	 fileinfo['image'] = "./#{@photos[i]}"
