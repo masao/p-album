@@ -38,7 +38,9 @@ div.search-form { text-align: center; }
 /* ³Æ¼Ì¿¿ */
 div.image { text-align: center; }
 .datetime {
-  margin-left: 10%;
+  margin-top: 0px;
+  text-align: center;
+  font-size: smaller;
 }
 .description {
   width: 80%;
