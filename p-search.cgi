@@ -29,7 +29,13 @@ result.reverse.each {|f|
 <tr>
  <td class="thumbnail">
   <a href="#{f.htmlname}" title="#{title}">
-   <img src="#{f.thumbname}" #{ImageSize.new(open(f.thumbname.untaint)).html_imgsize}>
+EOF
+   if FileTest::exist?(f.thumbname)
+		param["body"] += %Q[<img src="#{f.thumbname}" #{ImageSize.new(open(f.thumbname.untaint)).html_imgsize}>]
+	else
+		param["body"] += title
+	end
+   param["body"] += <<EOF
   </a>
  </td>
  <td valign="top">
