@@ -1,4 +1,4 @@
-#! /usr/local/bin/ruby -wT -Ke
+#! /usr/local/bin/ruby -Ke
 # -*- Ruby -*-
 # $Id$
 
