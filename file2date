@@ -1,4 +1,4 @@
-#!/usr/local/bin/ruby
+#!/usr/local/bin/ruby -w
 # -*- Ruby -*-
 # $Id$
 
@@ -14,22 +14,21 @@
 # ruby-libexif パッケージ: <http://tam.0xfa.com/ruby-libexif/>
 
 ## ToDo:
-# 同一の時刻のファイルが既にある場合をどうするかは検討中…。
+# 同一の時刻（秒単位）のファイルが既にある場合をどうするかは検討中…。
 
 require 'ftools'
 require 'exif'
+require 'yaml'
 
 def usage
   print "Usage: #{$0} file [file ...]\n"
   exit 1
 end
 
-# Exif にある日付情報をISO8601形式にする。
-def exif2fname (datetime)
-  datetime[4] = '-'
-  datetime[7] = '-'
-  datetime[10] = 'T'
-  return datetime
+# Exif にある日付情報を Time オブジェクトにして返す。
+def exif2time (exif_datetime)
+  ary = exif_datetime.split(/\D+/)
+  return Time.local(ary[0], ary[1], ary[2], ary[3], ary[4], ary[5])
 end
 
 def main
@@ -37,18 +36,16 @@ def main
   while orig_fname = ARGV.shift
     begin
       exif = Exif.new(orig_fname)
-      datetime = exif2fname exif['DateTime']
+      datetime = exif2time exif['DateTime']
     rescue Exif::Error => e
       print "(Skip: Exif error):\t#{orig_fname}\n"
       next
-    end
-
-    if datetime[0..3] == "0000" then
-      print "(Skip: ${orig_fname} doesn't have a valid date):\t#{datetime}\n"
+    rescue ArgumentError => e
+      print "(Skip: #{orig_fname} doesn't have a valid date)\n"
       next
     end
 
-    new_fname = datetime + ".jpg"
+    new_fname = datetime.strftime("%Y-%m-%dT%H:%M:%S.jpg")
     if FileTest.exist?(new_fname) then
       unless File.cmp(orig_fname, new_fname) then
 	print "(Skip: #{new_fname} already exist):\t#{orig_fname}\n"
@@ -58,7 +55,12 @@ def main
     File.copy(orig_fname, new_fname)
     stat = File.stat(orig_fname)
     File.utime(stat.atime, stat.mtime, new_fname)
-    print new_fname + "\n"
+    puts new_fname
+
+    yaml = YAML::Store.new("metadata.yaml", :SortKeys => true)
+    yaml.transaction do
+      yaml[new_fname] = { "datetime" => datetime }
+    end
   end
 end
 main

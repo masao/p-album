@@ -1,196 +1,186 @@
-#!/usr/local/bin/perl -w
-# -*- CPerl -*-
+#!/usr/local/bin/ruby
+# -*- Ruby -*-
 # $Id$
 
-use strict;
-use IO::File;
-use Image::Size qw(html_imgsize);
+require 'date'
+require 'image_size'
+require 'yaml'
 
 # index.htmlで、最近 N 日分を表示するか
-my $RECENT = 5;
-
-# 月の名称
-my @MONTHNAME = (0,
-		 "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-		 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+RECENT = 5
 
 # サムネールを置くディレクトリ
-my $THUMBS_DIR = "thumbs";
+THUMBS_DIR = "thumbs"
 
 # HTMLの雛型のあるディレクトリ
-my $TEMPLATE_DIR = 'templates';
+TEMPLATE_DIR = 'templates'
 
-# convert コマンドのオプション
-my @CONVERT_OPT = ('-geometry', '15%');
+# サムネール生成時の convert コマンドのオプション
+CONVERT_OPT = "-geometry '120x120>'"
 
-main();
-sub main {
-    my @files = find_photos();
-    my $i = 0;
-    make_htmlpages(@files);
-    make_monthlypage(@files);
-}
+# 月名
+MONTHNAMES = [nil] + %w(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)
 
-sub usage() {
-    print "  Usage: $0 dir\n";
-    exit;
-}
+def usage
+  print "  Usage: $0 dir\n"
+  exit
+end
 
-sub find_photos() {
-    opendir(DIR, ".") || die "opendir: .: $!";
-    my @files = sort grep(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.jpg$/,
-		       readdir(DIR));
-    closedir(DIR) || die "closedir: $!";
-    return @files;
-}
+def thumbname(fname)
+  return "#{THUMBS_DIR}/#{fname}"
+end
 
-sub make_thumbnail($) {
-    my ($fname) = @_;
-    my $thumb = thumbname($fname);
-    my @cmd = ("convert", @CONVERT_OPT, $fname, $thumb);
-    system(@cmd) == 0
-	|| die "system fail: \"@cmd\": $!";
-}
+def htmlname (fname)
+  base = File.basename(fname, ".jpg")
+  return "./#{base}.html"
+end
 
-sub make_htmlpages(@) {
-    my (@files) = @_;
+def find_photos
+  files = Dir.entries(".").select {|f|
+    f =~ /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.jpg$/
+  }
+  return files.sort
+end
 
-    for (my $i = 0; $i < @files; $i++) {
-	print "$files[$i]\n";
-	make_thumbnail($files[$i]) if not -e thumbname($files[$i]);
+def make_thumbnail (fname)
+  thumb = thumbname(fname)
+  system("convert #{CONVERT_OPT} #{fname} #{thumb}") || raise("convert fails")
+end
 
-	my %param = ();
-	my ($year, $month, $day, $hour, $min, $sec) = get_datetime($files[$i]);
-	$param{'date'} = "$year-$month-$day";
-	$param{'time'} = "$hour:$min:$sec";
-	$param{'monthlyindex'} = "$year-$month.html";
-	$param{'image'} = "./$files[$i]";
-	$param{'imagesize'} = html_imgsize($files[$i]);
-	if ($i == 0) {
-	    $param{'prev'} = "前の写真";
-	} else {
-	    my $html = htmlname($files[$i-1]);
-	    $param{'prev'} = "<a href=\"$html\">前の写真</a>";
-	}
-	if ($i == $#files) {
-	    $param{'next'} = "次の写真";
-	} else {
-	    my $html = htmlname($files[$i+1]);
-	    $param{'next'} = "<a href=\"$html\">次の写真</a>";
-	}
+def html_imgsize (fname)
+  img = ImageSize.new( File.open(fname) )
+  width = img.get_width
+  height = img.get_height
+  return "width=\"#{width}\" height=\"#{height}\""
+end
 
-	my $template = readfile("$TEMPLATE_DIR/htmlpage.html");
-	$template =~ s/\$(\w+)/defined($param{$1})? $param{$1} : ""/ge;
+def expand_template (fname, param)
+  template = File.open(fname).read
+  result = template.gsub(/\$(\w+)/) {|s|
+    param[$1] if param.has_key?($1)
+  }
+  return result
+end
 
-	my $html = htmlname($files[$i]);
-	my $fh = fopen(">$html");
-	print $fh $template;
-    }
-}
+def make_htmlpages(files)
+  metadata = YAML.load( File.open("metadata.yaml") )
+  files.each_index {|i|
+    puts files[i]
+    make_thumbnail(files[i]) unless FileTest.exist?(thumbname(files[i]))
 
-sub make_monthlypage(@) {
-    my (@files) = @_;
+    param = metadata[files[i]]
+    datetime = param['datetime']
+    param['datetime'] = datetime.strftime("%Y-%m-%d %H:%M")
+    param['date'] = datetime.strftime("%Y-%m-%d")
+    param['monthlyindex'] = datetime.strftime("%Y-%m.html")
+    param['image'] = "./#{files[i]}"
+    param['imagesize'] = html_imgsize(files[i])
+    if i == 0 then
+      param['prev'] = "前の写真"
+    else
+      html = htmlname(files[i-1])
+      param['prev'] = "<a href=\"#{html}\">前の写真</a>"
+    end
+    if i == files.size-1 then
+      param['next'] = "次の写真"
+    else
+      html = htmlname(files[i+1])
+      param['next'] = "<a href=\"#{html}\">次の写真</a>"
+    end
 
-    my %daybody = ();
-    my %monthbody = ();
-    foreach my $fname (@files) {
-	my ($year, $month, $day, $hour, $min, $sec) = get_datetime($fname);
-	my $html = htmlname($fname);
-	my $thumb = thumbname($fname);
-	my $size = html_imgsize($thumb);
-	$daybody{"$year-$month-$day"} .= "<a href=\"$html\"><img src=\"$thumb\" alt=\"（撮影日時 $year-$month-$day $hour:$min:$sec）\" $size></a>\n";
-	$monthbody{"$year-$month"}++;
-    }
-    my @month = sort keys %monthbody;
-    for (my $i = 0; $i < @month; $i++) {
-	my @days = sort grep /^$month[$i]/, keys %daybody;
-	my %param = ();
-	$param{'total'} = $monthbody{$month[$i]};
-	$param{'body'} = "<div class=\"monthbody\">\n";
-	foreach my $day (@days) {
-	    $param{'body'} .= "<div class=\"day-header\"><a name=\"$day\">$day</a></div>\n";
-	    $param{'body'} .= "<div class=\"day-body\">$daybody{$day}</div>\n";
-	}
-	$param{'body'} .= "</div>";
-	$param{'month'} = $month[$i];
-	if ($i > 0) {
-	    $param{'prev'} = "<a href=\"$month[$i-1].html\">前月</a>";
-	} else {
-	    $param{'prev'} = "前月";
-	}
-	if ($i < $#month) {
-	    $param{'next'} = "<a href=\"$month[$i+1].html\">翌月</a>";
-	} else {
-	    $param{'next'} = "翌月";
-	}
+    template = expand_template("#{TEMPLATE_DIR}/htmlpage.html", param)
+    html = File.open(htmlname(files[i]), "w")
+    html.print template
+  }
+end
 
-	my $template = readfile("$TEMPLATE_DIR/monthlypage.html");
-	$template =~ s/\$(\w+)/defined($param{$1})? $param{$1} : ""/ge;
-	my $fh = fopen(">$month[$i].html");
-	print $fh $template;
+def make_monthlypage (files)
+  daybody = Hash.new("")
+  monthbody = Hash.new(0)
+  metadata = YAML.load( File.open("metadata.yaml") )
+  files.each{|fname|
+    datetime = metadata[fname]["datetime"]
+    html = htmlname(fname)
+    thumb = thumbname(fname)
+    size = html_imgsize(thumb)
+    if metadata[fname].has_key?("title") then
+      title = metadata[fname]["title"]
+    else
+      title = datetime.strftime "（撮影日時 %Y-%m-%d %H:%M）"
+    end
+
+    day = datetime.strftime "%Y-%m-%d"
+    month = datetime.strftime "%Y-%m"
+    daybody[day] += "<a href=\"#{html}\"><img src=\"#{thumb}\" #{size} alt=\"#{title}\"></a>\n"
+    monthbody[month] += 1
+  }
+
+  month = monthbody.keys.sort
+  month.each_index{|i|
+    days = daybody.keys.sort.select {|e|
+      e =~ /^#{month[i]}/
     }
 
-    # index.html に最新のものを書き出す。
-    my %param = ();
-    $param{'recent'} = $RECENT;
-    my @days = sort { $b cmp $a } keys %daybody;
-    for (my $i = 0; $i < @days && $i < $RECENT; $i++) {
-	$param{'body'} .= "<div class=\"day-header\">$days[$i]</div>\n";
-	$param{'body'} .= "<div class=\"day-body\">$daybody{$days[$i]}</div>\n";
+    param = Hash.new
+    param['total'] = monthbody[month[i]]
+    param['body'] = "<div class=\"monthbody\">\n"
+    days.each {|day|
+      param['body'] += "<div class=\"day-header\"><a name=\"#{day}\">#{day}</a></div>\n"
+      param['body'] += "<div class=\"day-body\">#{daybody[day]}</div>\n"
     }
-    $param{'monthly_list'} = get_monthly_list(%monthbody);
+    param['body'] += "</div>"
+    param['month'] = month[i]
+    if i == 0 then
+      param['prev'] = "前月"
+    else
+      param['prev'] = "<a href=\"#{month[i-1]}.html\">前月</a>"
+    end
+    if i == month.size-1 then
+      param['next'] = "翌月"
+    else
+      param['next'] = "<a href=\"#{month[i+1]}.html\">翌月</a>"
+    end
 
-    my $template = readfile("$TEMPLATE_DIR/indexpage.html");
-    $template =~ s/\$(\w+)/defined($param{$1})? $param{$1} : ""/ge;
-    my $fh = fopen(">index.html");
-    print $fh $template;
-}
+    template = expand_template("#{TEMPLATE_DIR}/monthlypage.html", param)
+    html = File.open("#{month[i]}.html", "w")
+    html.print template
+  }
 
-sub get_monthly_list(%) {
-    my (%month) = @_;
-    my $result = "";
-    my $prev_year = 0;
-    for my $i (sort keys %month) {
-        my ($year, $month) = ($i =~ /^(\d{4})-(\d{2})/);
-        if ($year ne $prev_year) { # year changed!
-	    $result .= "<br>\n" if $prev_year;
-	    $result .= "$year : \n";
-            $prev_year = $year;
-        }
-        $result .= "<a href=\"$i.html\">$MONTHNAME[$month]</a>\n";
-    }
-    return $result;
-}
+  # index.html に最新のものを書き出す。
+  param = Hash.new("")
+  param['recent'] = RECENT
+  days = daybody.keys.sort.reverse
+  days[0 .. RECENT].each{|day|
+    param['body'] += "<div class=\"day-header\">#{day}</div>\n"
+    param['body'] += "<div class=\"day-body\">#{daybody[day]}</div>\n"
+  }
+  param['monthly_list'] = get_monthly_list(monthbody)
 
-sub get_datetime($) {
-    my ($fname) = @_;
-    return split(/\D+/, $fname);
-}
+  template = expand_template("#{TEMPLATE_DIR}/indexpage.html", param)
+  html = File.open("index.html", "w")
+  html.print template
+end
 
-sub thumbname($) {
-    my ($fname) = @_;
-    return "$THUMBS_DIR/$fname";
-}
+def get_monthly_list (monthbody)
+  result = ""
+  prev_year = 0
+  monthbody.keys.sort.each {|m|
+    year, month = m[0..3], m[5..6]
+    if year != prev_year then
+      # year changed!
+      result += "<br>\n" if prev_year != 0
+      result += "#{year} : \n"
+      prev_year = year
+    end
+    result += "<a href=\"#{m}.html\">#{MONTHNAMES[month.to_i]}</a>\n"
+  }
+  return result
+end
 
-sub htmlname($) {
-    my ($fname) = @_;
-    $fname =~ s/\.jpg$/\.html/io;
-    return "./$fname";
-}
+def main
+  files = find_photos()
+  make_htmlpages(files)
+  make_monthlypage(files)
+end
 
-sub fopen($) {
-    my ($fname) = @_;
-    my $fh = new IO::File;
-    $fh->open($fname) || die "fopen: $fname: $!";
-    return $fh;
-}
-
-sub readfile ($) {
-    my ($fname) = @_;
-    my $fh = fopen($fname);
-    my $cont = '';
-    my $size = -s $fh;
-    read $fh, $cont, $size;
-    $fh->close;
-    return $cont;
-}
+main()
