@@ -73,6 +73,10 @@ class PhotoAlbum
       @photos = photofiles.sort.collect {|f|
 	 PhotoFile.new(f, @metadata[f])
       }
+      @conf = {}
+      if FileTest.readable?("p-album.conf") then
+	 @conf = YAML::load(open("p-album.conf"))
+      end
    end
 
    # 文字列の置換
@@ -136,7 +140,7 @@ class PhotoAlbum
 
 	 template = TemplateFile.new("#{TEMPLATE_DIR}/htmlpage.html")
 	 html = File.open(@photos[i].htmlname, "w")
-	 html.print template.expand(fileinfo)
+	 html.print template.expand(fileinfo.update(@conf))
       }
    end
 
@@ -190,7 +194,7 @@ class PhotoAlbum
 
 	 template = TemplateFile.new("#{TEMPLATE_DIR}/monthlypage.html")
 	 html = File.open("#{month[i]}.html", "w")
-	 html.print template.expand(param)
+	 html.print template.expand(param.update(@conf))
       }
 
       # index.html に最新の数日分を書き出す。
@@ -208,7 +212,7 @@ class PhotoAlbum
 
       template = TemplateFile.new("#{TEMPLATE_DIR}/indexpage.html")
       html = File.open("index.html", "w")
-      html.print template.expand(param)
+      html.print template.expand(param.update(@conf))
    end
 
    def get_monthly_list (monthbody)
