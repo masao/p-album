@@ -10,7 +10,7 @@ $LOAD_PATH.unshift "."
 require 'p-album.rb'
 
 cgi = CGI.new
-keyword = cgi['keyword'][0] || ""
+keyword = (cgi['keyword'][0] || "").strip
 result = []
 if keyword.length > 0 then
    album = PhotoAlbum.new
@@ -23,15 +23,21 @@ param = Hash.new("")
 param["keyword"] = CGI.escapeHTML(keyword)
 param["result"] = result.size
 result.reverse.each {|f|
+   title = f.info["title"] || "ÌµÂê"
+   description = f.info["description"] || ""
    param["body"] += <<EOF
 <tr>
- <td>
-  <a href="#{f.htmlname}">
+ <td class="thumbnail">
+  <a href="#{f.htmlname}" title="#{title}">
    <img src="#{f.thumbname}" #{ImageSize.new(open(f.thumbname)).html_imgsize}>
   </a>
  </td>
- <td>
-  #{f.info["datetime"].strftime("%Y-%m-%d")}
+ <td valign="top">
+ <dl>
+  <dt>#{title}</dt>
+  <dd>»£±ÆÆü»þ: <em>#{f.info["datetime"].strftime("%Y-%m-%d %H:%m:%S")}</em></dd>
+  <dd>#{description}</dd>
+ </dl>
  </td>
 </tr>
 EOF
