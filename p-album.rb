@@ -1,11 +1,25 @@
 #! /usr/local/bin/ruby
 # $Id$
 
+require 'nkf'
+require 'tempfile'
+require 'ftools'
+require 'image_size'
+require 'yaml'
+
 # サムネールを置くディレクトリ
 THUMBS_DIR = "thumbs"
 
 # サムネール生成時の convert コマンドのオプション
 CONVERT_OPT = "-geometry '96x96>' +profile '*'"
+
+class String
+	def shorten( len = 120 )
+		lines = NKF::nkf( "-e -m0 -f#{len}", self.gsub( /<[^>]+>/, ' ' ).gsub( /\n/, ' ' ) ).split( /\n/ )
+		lines[0].concat( '...' ) if lines[0] and lines[1]
+		lines[0]
+	end
+end
 
 class ImageSize
    def html_imgsize

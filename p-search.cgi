@@ -36,7 +36,7 @@ result.reverse.each {|f|
  <dl>
   <dt>#{title}</dt>
   <dd>»£±ÆÆü»þ: <em>#{f.info["datetime"].strftime("%Y-%m-%d %H:%m:%S")}</em></dd>
-  <dd>#{description}</dd>
+  <dd>#{description.shorten}</dd>
  </dl>
  </td>
 </tr>

@@ -2,10 +2,6 @@
 # -*- Ruby -*-
 # $Id$
 
-require 'image_size'
-require 'yaml'
-require 'tempfile'
-
 require 'p-album.rb'
 
 # オプション指定
