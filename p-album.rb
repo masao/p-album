@@ -49,6 +49,7 @@ class PhotoFile
       return @filename
    end
 
+   # サムネールの生成を行う
    def make_thumbnail
       system("convert #{CONVERT_OPT} #{filename} #{thumbname}") || raise("convert fails")
    end
@@ -70,7 +71,10 @@ class PhotoAlbum
       end
    end
 
-   # 文字列の置換
+   # 文字列置換を行う
+   ## FIXME:
+   ## 拡張性がないので、簡単に他の形式を定義できるようにする。
+   ## e.g. Google:"foo", Amazon:"bar" ?
    def auto_replace (info)
       info.keys.each do |k|
 	 if info[k].class == String
@@ -88,6 +92,7 @@ class PhotoAlbum
       end
    end
 
+   # 写真一枚ごとのHTMLを出力する
    def make_htmlpages
       @photos.each_index do |i|
 	 puts @photos[i]
@@ -135,6 +140,7 @@ class PhotoAlbum
       end
    end
 
+   # 月別のHTML、index.html を出力する
    def make_monthlypage
       daybody = Hash.new("")
       monthbody = Hash.new(0)
@@ -207,6 +213,7 @@ class PhotoAlbum
       html.print template.expand(param.update(@conf))
    end
 
+   # 月別一覧のHTMLを返す
    def get_monthly_list (monthbody)
       result = ""
       prev_year = 0
@@ -223,6 +230,7 @@ class PhotoAlbum
       return result
    end
 
+   # キーワード検索を行う
    def search (str)
       result = @photos.select {|f|
 	 stat = false
