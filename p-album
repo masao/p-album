@@ -10,9 +10,6 @@ use Image::Size qw(html_imgsize);
 # index.htmlで、最近 N 日分を表示するか
 my $RECENT = 5;
 
-# HTMLファイルの拡張子
-my $HTML_SUFFIX = '.html';
-
 # サムネールを置くディレクトリ
 my $THUMBS_DIR = "thumbs";
 
@@ -62,7 +59,7 @@ sub make_htmlpages(@) {
 	my ($year, $month, $day, $hour, $min, $sec) = split(/\D+/, $files[$i]);
 	$param{'date'} = "$year-$month-$day";
 	$param{'time'} = "$hour:$min:$sec";
-	$param{'monthlyindex'} = "$year-$month$HTML_SUFFIX";
+	$param{'monthlyindex'} = "$year-$month.html";
 	$param{'image'} = basename($files[$i]);
 	$param{'imagesize'} = html_imgsize($files[$i]);
 	if ($i == 0) {
@@ -172,7 +169,7 @@ sub thumbname($) {
 
 sub htmlname($) {
     my ($fname) = @_;
-    $fname =~ s/\.jpg$/$HTML_SUFFIX/io;
+    $fname =~ s/\.jpg$/\.html/io;
     return "$fname";
 }
 
