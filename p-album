@@ -59,6 +59,23 @@ def html_imgsize (fname)
   return "width=\"#{width}\" height=\"#{height}\""
 end
 
+# 文字列の置換
+def auto_replace (info)
+  info.keys.each {|k|
+    next if info[k].class != String
+    info[k].gsub!(/\[([^\]]+)\]/) {
+      match = $1
+      if match =~ /^(\d{4}-\d{2})-\d{2}$/ then
+	"<a href=\"#{$1}.html##{match}\">[#{match}]</a>"
+      elsif match =~ /^Cookpad:(\d+)$/i then
+	"<a href=\"http://cookpad.com/recipe.cfm?RID=#{$1}\">[#{match}]</a>"
+      else
+	"[#{match}]"
+      end
+    }
+  }
+end
+
 def expand_template (fname, param)
   template = File.open(fname).read
   result = template.gsub(/\$(\w+)/) {|s|
@@ -84,6 +101,8 @@ def make_htmlpages(files)
     if FileTest.exist?(thumbname(files[i])) == false || File.mtime(thumbname(files[i])) < File.mtime(files[i])
       make_thumbnail(files[i])
     end
+
+    auto_replace(fileinfo)
 
     datetime = fileinfo['datetime']
     fileinfo['datetime'] = datetime.strftime("%Y-%m-%d %H:%M")
