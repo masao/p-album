@@ -12,8 +12,8 @@ h1 { text-align: center; }
   background-color: silver;
 }
 
-.image { text-align: center; }
-.datetime { text-align: center; }
+div.image { text-align: center; }
+div.datetime { text-align: center; }
 
 div.day-header {
   font-size: larger;
@@ -23,3 +23,10 @@ div.day-header {
   border-color: gray;
 }
 div.day-body { margin: 2% 10%; }
+
+div.monthly-list {
+  width: 80%;
+  margin: auto;
+  border: solid thin gray;
+  padding: 1em;
+}
