@@ -1,6 +1,7 @@
-body { margin: 2%; }
+/* 全般 */
 h1 { text-align: center; }
 
+/* ナビゲーションバー */
 .prev { text-align: left; }
 .next { text-align: right; }
 .up { text-align: center; }
@@ -11,16 +12,31 @@ h1 { text-align: center; }
   background-color: silver;
 }
 
-div.image { text-align: center; }
+/* 共通 */
+div.day-header {
+  font-size: larger;
+  padding: 5px;
+  border-width: 0 0 thin thick;
+  border-style: solid;
+  border-color: gray;
+}
+div.day-body { margin: 2% 10%; }
 
+/* トップ */
+div.monthly-list {
+  width: 80%;
+  margin: auto;
+  border: solid thin gray;
+  padding: 1em;
+}
 div.last-update {
   text-align: right;
   font-size: smaller;
-/* font-style: italic;*/
 }
-
 div.search-form { text-align: center; }
 
+/* 各写真 */
+div.image { text-align: center; }
 .datetime {
   margin-left: 10%;
 }
@@ -34,18 +50,10 @@ div.search-form { text-align: center; }
   padding: 5px;
 }
 
-div.day-header {
-  font-size: larger;
+/* 検索CGI */
+table.search-result {
+  margin-left: 2%;
+  margin-right: 2%;
   padding: 5px;
-  border-width: 0 0 thin thick;
-  border-style: solid;
-  border-color: gray;
 }
-div.day-body { margin: 2% 10%; }
-
-div.monthly-list {
-  width: 80%;
-  margin: auto;
-  border: solid thin gray;
-  padding: 1em;
-}
+td.thumbnail { text-align: center; }
