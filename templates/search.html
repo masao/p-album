@@ -12,6 +12,13 @@
 </head>
 <body>
 <h1>検索: $keyword</h1>
+<div class="search-form">
+<form action="p-search.cgi" method="GET">
+キーワード検索:
+<input type="text" name="keyword" value="$keyword" size="30">
+<input type="submit" value=" Search ">
+</form>
+</div>
 <p>
 $result 件ヒットしました。
 </p>
