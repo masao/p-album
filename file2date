@@ -1,0 +1,64 @@
+#!/usr/local/bin/ruby
+# -*- Ruby -*-
+# $Id$
+
+## Overview
+# <http://nais.to/~yto/tools/file2date/> を Exif 対応で書き直したもの。
+# ファイル名については、ISO8601 な感じにした。
+# Ex: dcp_0003.jpg --> 2001-06-23T20:05:32.jpg
+# Ex: /home/yto/e-01.txt --> 2001-06-12T14:32:10.txt
+
+## Requirements:
+# libexif: <http://libexif.sourceforge.net/>
+# Ruby: <http://www.ruby-lang.org/>
+# ruby-libexif パッケージ: <http://tam.0xfa.com/ruby-libexif/>
+
+## ToDo:
+# 同一の時刻のファイルが既にある場合をどうするかは検討中…。
+
+require 'ftools'
+require 'exif'
+
+def usage
+  print "Usage: #{$0} file [file ...]\n"
+  exit 1
+end
+
+# Exif にある日付情報をISO8601形式にする。
+def exif2fname (datetime)
+  datetime[4] = '-'
+  datetime[7] = '-'
+  datetime[10] = 'T'
+  return datetime
+end
+
+def main
+  usage if ARGV.length == 0
+  while orig_fname = ARGV.shift
+    begin
+      exif = Exif.new(orig_fname)
+      datetime = exif2fname exif['DateTime']
+    rescue Exif::Error => e
+      print "(Skip: Exif error):\t#{orig_fname}\n"
+      next
+    end
+
+    if datetime[0..3] == "0000" then
+      print "(Skip: ${orig_fname} doesn't have a valid date):\t#{datetime}\n"
+      next
+    end
+
+    new_fname = datetime + ".jpg"
+    if FileTest.exist?(new_fname) then
+      unless File.cmp(orig_fname, new_fname) then
+	print "(Skip: #{new_fname} already exist):\t#{orig_fname}\n"
+      end
+      next
+    end
+    File.copy(orig_fname, new_fname)
+    stat = File.stat(orig_fname)
+    File.utime(stat.atime, stat.mtime, new_fname)
+    print new_fname + "\n"
+  end
+end
+main

@@ -1,0 +1,25 @@
+body { margin: 2%; }
+h1 { text-align: center; }
+
+.prev { text-align: left; }
+.next { text-align: right; }
+.up { text-align: center; }
+.navbar {
+  border: solid thin gray;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: silver;
+}
+
+.image { text-align: center; }
+.datetime { text-align: center; }
+
+div.day-header {
+  font-size: larger;
+  padding: 5px;
+  border-width: 0 0 thin thick;
+  border-style: solid;
+  border-color: gray;
+}
+div.day-body { margin: 2% 10%; }
