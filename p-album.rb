@@ -186,7 +186,7 @@ class PhotoAlbum
 	    param['next'] = "Õ‚∑Ó"
 	 else
 	    param['next'] = "<a href=\"#{month[i+1]}.html\">Õ‚∑Ó</a>"
-	    param['link_next'] = "<link rel=\"next\" href=\"#{month[i-1]}.html\" title=\"#{month[i+1]}\">"
+	    param['link_next'] = "<link rel=\"next\" href=\"#{month[i+1]}.html\" title=\"#{month[i+1]}\">"
 	 end
 
 	 template = TemplateFile.new("#{@conf["TEMPLATE_DIR"]}/monthlypage.html")
