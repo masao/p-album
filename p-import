@@ -8,16 +8,6 @@
 # Ex: dcp_0003.jpg --> 2001-06-23T20:05:32.jpg
 # Ex: /home/yto/e-01.txt --> 2001-06-12T14:32:10.txt
 
-## Requirements:
-# Ruby: <http://www.ruby-lang.org/>
-# libexif: <http://libexif.sourceforge.net/>
-# ruby-libexif: <http://tam.0xfa.com/ruby-libexif/>
-# YAML4r: <http://yaml4r.sourceforge.net/>
-
-## ToDo:
-# 同一の時刻（秒単位）のファイルが既にある場合をどうするかは検討中…。
-# （とりあえず警告を出してスキップするようにしてある）
-
 require 'ftools'
 require 'exif'
 require 'yaml'
@@ -39,10 +29,10 @@ def main
       begin
 	 exif = Exif.new(orig_fname)
 	 datetime = exif2time exif['DateTime']
-      rescue Exif::Error => e
+      rescue Exif::Error
 	 print "(Skip: Exif error):\t#{orig_fname}\n"
 	 next
-      rescue ArgumentError => e
+      rescue ArgumentError
 	 print "(Skip: #{orig_fname} doesn't have a valid date)\n"
 	 next
       end
