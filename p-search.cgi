@@ -29,7 +29,7 @@ result.reverse.each {|f|
 <tr>
  <td class="thumbnail">
   <a href="#{f.htmlname}" title="#{title}">
-   <img src="#{f.thumbname}" #{ImageSize.new(open(f.thumbname)).html_imgsize}>
+   <img src="#{f.thumbname}" #{ImageSize.new(open(f.thumbname.untaint)).html_imgsize}>
   </a>
  </td>
  <td valign="top">
@@ -47,5 +47,5 @@ conf = {}
 if FileTest.readable?("p-album.conf") then
    conf = YAML.load(open("p-album.conf"))
 end
-template = TemplateFile.new("#{conf["TEMPLATE_DIR"]}/search.html")
+template = TemplateFile.new("#{conf["TEMPLATE_DIR"].untaint}/search.html")
 print template.expand(param.update(conf))
