@@ -209,6 +209,7 @@ class PhotoAlbum
       monthbody.keys.sort.each {|m|
 	 param["link_chapter"] += "<link rel=\"chapter\" href=\"#{m}.html\">\n"
       }
+      param['now'] = Time.now.strftime "%Y-%m-%d %H:%M:%S"
 
       template = TemplateFile.new("#{TEMPLATE_DIR}/indexpage.html")
       html = File.open("index.html", "w")

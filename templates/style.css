@@ -13,6 +13,12 @@ h1 { text-align: center; }
 
 div.image { text-align: center; }
 
+div.last-update {
+  text-align: right;
+  font-size: smaller;
+/* font-style: italic;*/
+}
+
 .datetime {
   margin-left: 10%;
 }
