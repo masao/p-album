@@ -22,48 +22,48 @@ require 'exif'
 require 'yaml'
 
 def usage
-  print "Usage: #{$0} file [file ...]\n"
-  exit 1
+   print "Usage: #{$0} file [file ...]\n"
+   exit 1
 end
 
 # Exif にある日付情報を Time オブジェクトにして返す。
 def exif2time (exif_datetime)
-  ary = exif_datetime.split(/\D+/)
-  return Time.local(*ary)
+   ary = exif_datetime.split(/\D+/)
+   return Time.local(*ary)
 end
 
 def main
-  usage if ARGV.length == 0
-  while orig_fname = ARGV.shift
-    begin
-      exif = Exif.new(orig_fname)
-      datetime = exif2time exif['DateTime']
-    rescue Exif::Error => e
-      print "(Skip: Exif error):\t#{orig_fname}\n"
-      next
-    rescue ArgumentError => e
-      print "(Skip: #{orig_fname} doesn't have a valid date)\n"
-      next
-    end
-
-    new_fname = datetime.strftime("%Y-%m-%dT%H:%M:%S.jpg")
-    if FileTest.exist?(new_fname) then
-      unless File.cmp(orig_fname, new_fname) then
-	print "(Skip: #{new_fname} already exist):\t#{orig_fname}\n"
+   usage if ARGV.length == 0
+   while orig_fname = ARGV.shift
+      begin
+	 exif = Exif.new(orig_fname)
+	 datetime = exif2time exif['DateTime']
+      rescue Exif::Error => e
+	 print "(Skip: Exif error):\t#{orig_fname}\n"
+	 next
+      rescue ArgumentError => e
+	 print "(Skip: #{orig_fname} doesn't have a valid date)\n"
+	 next
       end
-      next
-    end
-    File.copy(orig_fname, new_fname)
-    stat = File.stat(orig_fname)
-    File.utime(stat.atime, stat.mtime, new_fname)
-    puts new_fname
 
-    yaml = YAML::Store.new("metadata.yaml", :SortKeys => true)
-    yaml.transaction do
-      yaml[new_fname] = Hash.new() unless yaml.root?(new_fname)
-      yaml[new_fname]["datetime"] = datetime
-    end
-  end
+      new_fname = datetime.strftime("%Y-%m-%dT%H:%M:%S.jpg")
+      if FileTest.exist?(new_fname) then
+	 unless File.cmp(orig_fname, new_fname) then
+	    print "(Skip: #{new_fname} already exist):\t#{orig_fname}\n"
+	 end
+	 next
+      end
+      File.copy(orig_fname, new_fname)
+      stat = File.stat(orig_fname)
+      File.utime(stat.atime, stat.mtime, new_fname)
+      puts new_fname
+
+      yaml = YAML::Store.new("metadata.yaml", :SortKeys => true)
+      yaml.transaction do
+	 yaml[new_fname] = Hash.new() unless yaml.root?(new_fname)
+	 yaml[new_fname]["datetime"] = datetime
+      end
+   end
 end
 
 main
