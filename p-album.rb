@@ -192,7 +192,7 @@ class PhotoAlbum
       param = Hash.new("")
       param["recent"] = RECENT
       days = daybody.keys.sort.reverse
-      days[0 .. RECENT].each{|day|
+      days[0 ... RECENT].each{|day|
 	 param["body"] += "<div class=\"day-header\">#{day}</div>\n"
 	 param["body"] += "<div class=\"day-body\">#{daybody[day]}</div>\n"
       }
