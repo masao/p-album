@@ -64,7 +64,7 @@ sub make_htmlpages(@) {
 	$param{'date'} = "$year-$month-$day";
 	$param{'time'} = "$hour:$min:$sec";
 	$param{'monthlyindex'} = "$year-$month.html";
-	$param{'image'} = $files[$i];
+	$param{'image'} = "./$files[$i]";
 	$param{'imagesize'} = html_imgsize($files[$i]);
 	if ($i == 0) {
 	    $param{'prev'} = "Á°¤Î¼Ì¿¿";
@@ -174,7 +174,7 @@ sub thumbname($) {
 sub htmlname($) {
     my ($fname) = @_;
     $fname =~ s/\.jpg$/\.html/io;
-    return "$fname";
+    return "./$fname";
 }
 
 sub fopen($) {
