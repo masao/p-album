@@ -227,7 +227,7 @@ class PhotoAlbum
 	       result += "#{month}\n"
 	    end
 	 end
-	 result += "<br>\n"
+	 result += "<br>\n" if year != end_year
       end
       return result
    end
