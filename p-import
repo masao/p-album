@@ -26,7 +26,7 @@ end
 def main
    usage if ARGV.length == 0
 
-   yaml = YAML::Store.new("metadata.yaml", :SortKeys => true)
+   yaml = YAML::Store.new("metadata.yaml", :SortKeys => true, :UseBlock => true)
    yaml.transaction do
       while orig_fname = ARGV.shift
 	 begin
