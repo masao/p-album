@@ -89,10 +89,22 @@ class PhotoAlbum
       end
    end
 
+   # 文字列をファイルの内容と比較して、変更がある場合のみ書きこむ
+   def write_to_file (str, fname)
+      tempfile = Tempfile.new(fname)
+      tempfile.print str
+      tempfile.close
+      unless File.exist?(fname) && File.cmp(fname, tempfile.path)
+	 File.cp(tempfile.path, fname)
+	 File.chmod(0644)
+	 puts fname
+      end
+   end
+
    # 写真一枚ごとのHTMLを出力する
    def make_htmlpages
       @photos.each_index do |i|
-	 puts @photos[i]
+	 # puts @photos[i]
 	 fileinfo = Hash[@photos[i].info]
 	 if fileinfo.has_key?("convert")
 	    unless FileTest.exist?(@photos[i].filename + ".orig")
@@ -132,8 +144,8 @@ class PhotoAlbum
 	 end
 
 	 template = TemplateFile.new("#{@conf["TEMPLATE_DIR"]}/htmlpage.html")
-	 html = File.open(@photos[i].htmlname, "w")
-	 html.print template.expand(fileinfo.update(@conf))
+	 write_to_file(template.expand(fileinfo.update(@conf)),
+		       @photos[i].htmlname)
       end
    end
 
@@ -187,8 +199,8 @@ class PhotoAlbum
 	 end
 
 	 template = TemplateFile.new("#{@conf["TEMPLATE_DIR"]}/monthlypage.html")
-	 html = File.open("#{month[i]}.html", "w")
-	 html.print template.expand(param.update(@conf))
+	 write_to_file(template.expand(param.update(@conf)),
+		       "#{month[i]}.html")
       end
 
       # index.html に最新の数日分を書き出す。
@@ -207,8 +219,7 @@ class PhotoAlbum
       param['total_size'] = total_size / 1024 / 1000
 
       template = TemplateFile.new("#{@conf["TEMPLATE_DIR"]}/indexpage.html")
-      html = File.open("index.html", "w")
-      html.print template.expand(param.update(@conf))
+      write_to_file(template.expand(param.update(@conf)), "index.html")
    end
 
    # 月別一覧のHTMLを返す
