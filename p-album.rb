@@ -5,7 +5,7 @@
 THUMBS_DIR = "thumbs"
 
 # サムネール生成時の convert コマンドのオプション
-CONVERT_OPT = "-geometry '96x96>'"
+CONVERT_OPT = "-geometry '96x96>' +profile '*'"
 
 # 月名
 MONTHNAMES = [nil] + %w(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)
