@@ -47,5 +47,5 @@ conf = {}
 if FileTest.readable?("p-album.conf") then
    conf = YAML.load(open("p-album.conf"))
 end
-template = TemplateFile.new("#{TEMPLATE_DIR}/search.html")
+template = TemplateFile.new("#{conf["TEMPLATE_DIR"]}/search.html")
 print template.expand(param.update(conf))
