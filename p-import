@@ -25,37 +25,39 @@ end
 
 def main
    usage if ARGV.length == 0
-   while orig_fname = ARGV.shift
-      begin
-	 exif = Exif.new(orig_fname)
-	 datetime = exif2time exif['DateTime']
-      rescue Exif::Error
-	 print "(Skip: Exif error):\t#{orig_fname}\n"
-	 next
-      rescue ArgumentError
-	 print "(Skip: #{orig_fname} doesn't have a valid date)\n"
-	 next
-      end
 
-      new_fname = datetime.strftime("%Y-%m-%dT%H:%M:%S.jpg")
-      if FileTest.exist?(new_fname) then
-	 new_fname += ".orig" if FileTest.exist?(new_fname + ".orig")
-	 unless File.cmp(orig_fname, new_fname) then
-	    print "(Skip: #{new_fname} already exist):\t#{orig_fname}\n"
+   yaml = YAML::Store.new("metadata.yaml", :SortKeys => true)
+   yaml.transaction do
+      while orig_fname = ARGV.shift
+	 begin
+	    exif = Exif.new(orig_fname)
+	    datetime = exif2time exif['DateTime']
+	 rescue Exif::Error
+	    print "(Skip: Exif error):\t#{orig_fname}\n"
+	    next
+	 rescue ArgumentError
+	    print "(Skip: #{orig_fname} doesn't have a valid date)\n"
+	    next
 	 end
-	 next
-      end
-      File.copy(orig_fname, new_fname, true)
-      stat = File.stat(orig_fname)
-      File.utime(stat.atime, stat.mtime, new_fname)
-      # puts new_fname
 
-      yaml = YAML::Store.new("metadata.yaml", :SortKeys => true)
-      yaml.transaction do
-	 yaml[new_fname] = Hash.new() unless yaml.root?(new_fname)
+	 new_fname = datetime.strftime("%Y-%m-%dT%H:%M:%S.jpg")
+	 if FileTest.exist?(new_fname)
+	    target = new_fname
+	    target += ".orig" if FileTest.exist?(target + ".orig")
+	    unless File.cmp(orig_fname, target)
+	       print "(Skip: #{target} already exist):\t#{orig_fname}\n"
+	       next
+	    end
+	 else
+	    File.copy(orig_fname, new_fname)
+	    stat = File.stat(orig_fname)
+	    File.utime(stat.atime, stat.mtime, new_fname)
+	 end
+
+	 yaml[new_fname] = Hash.new unless yaml.root?(new_fname)
 	 yaml[new_fname]["datetime"] = datetime
+	 puts "#{orig_fname} -> #{new_fname}"
       end
    end
 end
-
 main
