@@ -4,7 +4,6 @@
 
 use strict;
 use IO::File;
-use File::Find;
 use File::Basename;
 use Image::Size qw(html_imgsize);
 
@@ -27,12 +26,7 @@ main();
 sub main {
     my @files = find_photos();
     my $i = 0;
-    foreach my $fname (@files) {
-	print "$fname\n";
-	make_thumbnail($fname) if not -e thumbname($fname);
-	make_htmlpage($fname, $files[$i-1], $files[$i+1]);
-	$i++;
-    }
+    make_htmlpages(@files);
     make_monthlypage(@files);
 }
 
@@ -57,25 +51,40 @@ sub make_thumbnail($) {
 	|| die "system fail: \"@cmd\": $!";
 }
 
-sub make_htmlpage($$$) {
-    my ($fname, $prevfile, $nextfile) = @_;
+sub make_htmlpages(@) {
+    my (@files) = @_;
 
-    my %param = ();
-    my ($year, $month, $day, $hour, $min, $sec) = split(/\D+/, $fname);
-    $param{'date'} = "$year-$month-$day";
-    $param{'time'} = "$hour:$min:$sec";
-    $param{'monthlyindex'} = "$year-$month$HTML_SUFFIX";
-    $param{'image'} = basename($fname);
-    $param{'imagesize'} = html_imgsize($fname);
-    $param{'prev'} = htmlname($prevfile) if -e $prevfile;
-    $param{'next'} = htmlname($nextfile) if -e $nextfile;
+    for (my $i = 0; $i < @files; $i++) {
+	print "$files[$i]\n";
+	make_thumbnail($files[$i]) if not -e thumbname($files[$i]);
 
-    my $template = readfile("$TEMPLATE_DIR/htmlpage.html");
-    $template =~ s/\$(\w+)/defined($param{$1})? $param{$1} : ""/ge;
+	my %param = ();
+	my ($year, $month, $day, $hour, $min, $sec) = split(/\D+/, $files[$i]);
+	$param{'date'} = "$year-$month-$day";
+	$param{'time'} = "$hour:$min:$sec";
+	$param{'monthlyindex'} = "$year-$month$HTML_SUFFIX";
+	$param{'image'} = basename($files[$i]);
+	$param{'imagesize'} = html_imgsize($files[$i]);
+	if ($i == 0) {
+	    $param{'prev'} = "前の写真";
+	} else {
+	    my $html = htmlname($files[$i-1]);
+	    $param{'prev'} = "<a href=\"$html\">前の写真</a>";
+	}
+	if ($i == $#files) {
+	    $param{'next'} = "次の写真";
+	} else {
+	    my $html = htmlname($files[$i+1]);
+	    $param{'next'} = "<a href=\"$html\">次の写真</a>";
+	}
 
-    my $html = htmlname($fname);
-    my $fh = fopen(">$html");
-    print $fh $template;
+	my $template = readfile("$TEMPLATE_DIR/htmlpage.html");
+	$template =~ s/\$(\w+)/defined($param{$1})? $param{$1} : ""/ge;
+
+	my $html = htmlname($files[$i]);
+	my $fh = fopen(">$html");
+	print $fh $template;
+    }
 }
 
 sub make_monthlypage(@) {
@@ -88,7 +97,7 @@ sub make_monthlypage(@) {
 	my $html = htmlname($fname);
 	my $thumb = thumbname($fname);
 	my $size = html_imgsize($thumb);
-	$daybody{"$year-$month-$day"} .= "<a href=\"$html\"><img src=\"$thumb\" $size></a>\n";
+	$daybody{"$year-$month-$day"} .= "<a href=\"$html\"><img src=\"$thumb\" alt=\"\" $size></a>\n";
 	$monthbody{"$year-$month"} = 1;
     }
     my @month = sort keys %monthbody;
@@ -119,26 +128,15 @@ sub make_monthlypage(@) {
 	print $fh $template;
     }
 
-    # index.html には最新のものを書き出す。
+    # index.html に最新のものを書き出す。
     my %param = ();
     $param{'recent'} = $RECENT;
-    $param{'body'} = "<div class=\"body\">\n";
     my @days = sort { $b cmp $a } keys %daybody;
     for (my $i = 0; $i < @days && $i < $RECENT; $i++) {
 	$param{'body'} .= "<div class=\"day-header\">$days[$i]</div>\n";
 	$param{'body'} .= "<div class=\"day-body\">$daybody{$days[$i]}</div>\n";
-	$param{'body'} .= "</div>";
     }
-    my $prev_year = 0;
-    for my $i (sort keys %monthbody) {
-        my ($year, $month) = ($i =~ /^(\d{4})-(\d{2})/);
-        if ($year ne $prev_year) { # year changed!
-	    $param{'monthly_list'} .= "<br>\n" if $prev_year;
-	    $param{'monthly_list'} .= "$year : \n";
-            $prev_year = $year;
-        }
-        $param{'monthly_list'} .= "<a href=\"$i.html\">$month</a>\n";
-    }
+    $param{'monthly_list'} = get_monthly_list(%monthbody);
 
     my $template = readfile("$TEMPLATE_DIR/indexpage.html");
     $template =~ s/\$(\w+)/defined($param{$1})? $param{$1} : ""/ge;
@@ -146,7 +144,20 @@ sub make_monthlypage(@) {
     print $fh $template;
 }
 
-sub get_monthlypage_list() {
+sub get_monthly_list(%) {
+    my (%month) = @_;
+    my $result = "";
+    my $prev_year = 0;
+    for my $i (sort keys %month) {
+        my ($year, $month) = ($i =~ /^(\d{4})-(\d{2})/);
+        if ($year ne $prev_year) { # year changed!
+	    $result .= "<br>\n" if $prev_year;
+	    $result .= "$year : \n";
+            $prev_year = $year;
+        }
+        $result .= "<a href=\"$i.html\">$month</a>\n";
+    }
+    return $result;
 }
 
 sub get_datetime($) {
@@ -161,8 +172,8 @@ sub thumbname($) {
 
 sub htmlname($) {
     my ($fname) = @_;
-    my ($base, $dir, $ext) = fileparse($fname, '\.jpg');
-    return "$dir$base$HTML_SUFFIX";
+    $fname =~ s/\.jpg$/$HTML_SUFFIX/io;
+    return "$fname";
 }
 
 sub fopen($) {
