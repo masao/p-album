@@ -10,6 +10,11 @@ use Image::Size qw(html_imgsize);
 # index.htmlで、最近 N 日分を表示するか
 my $RECENT = 5;
 
+# 月の名称
+my @MONTHNAME = (0,
+		 "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+		 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+
 # サムネールを置くディレクトリ
 my $THUMBS_DIR = "thumbs";
 
@@ -152,7 +157,7 @@ sub get_monthly_list(%) {
 	    $result .= "$year : \n";
             $prev_year = $year;
         }
-        $result .= "<a href=\"$i.html\">$month</a>\n";
+        $result .= "<a href=\"$i.html\">$MONTHNAME[$month]</a>\n";
     }
     return $result;
 }
