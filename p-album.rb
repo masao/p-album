@@ -225,8 +225,7 @@ class PhotoAlbum
       prev_year = 0
       monthbody.keys.sort.each do |m|
 	 year, month = m[0..3], m[5..6]
-	 if year != prev_year then
-	    # year changed!
+	 if year != prev_year then	# year changed!
 	    result += "<br>\n" if prev_year != 0
 	    result += "#{year} : \n"
 	    prev_year = year
@@ -240,7 +239,7 @@ class PhotoAlbum
    def search (str)
       result = @photos.select {|f|
 	 stat = false
-	 f.info.keys.each do |key|
+	 ["title", "description"].each do |key|
 	    if (f.info[key].class == String &&
 		f.info[key].downcase.index(str.downcase)) then
 	       stat = true
