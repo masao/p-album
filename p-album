@@ -18,7 +18,7 @@ my @MONTHNAME = (0,
 my $THUMBS_DIR = "thumbs";
 
 # HTMLの雛型のあるディレクトリ
-my $TEMPLATE_DIR = '/home/masao/CVSwork/p-album/templates';
+my $TEMPLATE_DIR = 'templates';
 
 # convert コマンドのオプション
 my @CONVERT_OPT = ('-geometry', '15%');
@@ -60,7 +60,7 @@ sub make_htmlpages(@) {
 	make_thumbnail($files[$i]) if not -e thumbname($files[$i]);
 
 	my %param = ();
-	my ($year, $month, $day, $hour, $min, $sec) = split(/\D+/, $files[$i]);
+	my ($year, $month, $day, $hour, $min, $sec) = get_datetime($files[$i]);
 	$param{'date'} = "$year-$month-$day";
 	$param{'time'} = "$hour:$min:$sec";
 	$param{'monthlyindex'} = "$year-$month.html";
@@ -94,17 +94,18 @@ sub make_monthlypage(@) {
     my %daybody = ();
     my %monthbody = ();
     foreach my $fname (@files) {
-	my ($year, $month, $day, $time) = get_datetime($fname);
+	my ($year, $month, $day, $hour, $min, $sec) = get_datetime($fname);
 	my $html = htmlname($fname);
 	my $thumb = thumbname($fname);
 	my $size = html_imgsize($thumb);
-	$daybody{"$year-$month-$day"} .= "<a href=\"$html\"><img src=\"$thumb\" alt=\"\" $size></a>\n";
-	$monthbody{"$year-$month"} = 1;
+	$daybody{"$year-$month-$day"} .= "<a href=\"$html\"><img src=\"$thumb\" alt=\"（撮影日時 $year-$month-$day $hour:$min:$sec）\" $size></a>\n";
+	$monthbody{"$year-$month"}++;
     }
     my @month = sort keys %monthbody;
     for (my $i = 0; $i < @month; $i++) {
 	my @days = sort grep /^$month[$i]/, keys %daybody;
 	my %param = ();
+	$param{'total'} = $monthbody{$month[$i]};
 	$param{'body'} = "<div class=\"monthbody\">\n";
 	foreach my $day (@days) {
 	    $param{'body'} .= "<div class=\"day-header\"><a name=\"$day\">$day</a></div>\n";
