@@ -139,6 +139,7 @@ class PhotoAlbum
 	 datetime = fileinfo['datetime']
 	 fileinfo['datetime'] = datetime.strftime("%Y-%m-%d %H:%M:%S")
 	 fileinfo['date'] = datetime.strftime("%Y-%m-%d")
+	 fileinfo['month'] = datetime.strftime("%Y-%m")
 	 fileinfo['monthlyindex'] = datetime.strftime("%Y-%m.html")
 	 fileinfo['image'] = "./#{@photos[i]}"
 	 fileinfo['imagesize'] = ImageSize.new(open(@photos[i].filename)).html_imgsize
