@@ -49,14 +49,13 @@ def main
 	       next
 	    end
 	 else
-	    File.copy(orig_fname, new_fname)
+	    File.copy(orig_fname, new_fname, true)
 	    stat = File.stat(orig_fname)
 	    File.utime(stat.atime, stat.mtime, new_fname)
 	 end
 
 	 yaml[new_fname] = Hash.new unless yaml.root?(new_fname)
 	 yaml[new_fname]["datetime"] = datetime
-	 puts "#{orig_fname} -> #{new_fname}"
       end
    end
 end
