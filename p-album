@@ -99,7 +99,7 @@ class PhotoAlbum
       fileinfo = Hash[@photos[i].info]
       if fileinfo.has_key?("convert")
 	unless FileTest.exist?(@photos[i].filename + ".orig")
-	  File.mv(@photos[i], @photos[i].filename + ".orig")
+	  File.mv(@photos[i].filename, @photos[i].filename + ".orig")
 	end
 	unless FileTest.exist?(@photos[i].filename)
 	  system("convert #{fileinfo["convert"]} #{@photos[i]}.orig #{@photos[i]}") || raise("convert fails")
