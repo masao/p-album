@@ -146,7 +146,9 @@ def make_monthlypage (files)
 
     day = datetime.strftime "%Y-%m-%d"
     month = datetime.strftime "%Y-%m"
-    daybody[day] += "<a href=\"#{html}\"><img src=\"#{thumb}\" #{size} alt=\"#{title}\"></a>\n"
+    daybody[day] += "<a href=\"#{html}\""
+    daybody[day] += " title=\"#{metadata[fname]["title"]}\"" if metadata[fname].has_key?("title")
+    daybody[day] += "><img src=\"#{thumb}\" #{size} alt=\"#{title}\"></a>\n"
     monthbody[month] += 1
   }
 
