@@ -224,13 +224,16 @@ class PhotoAlbum
    end
 
    def search (str)
-      result = []
-      @photos.each {|f|
-	 f.info.keys.each {|key|
-	    if f.info[key].class == String then
-	       result.push f if f.info[key].downcase.index(str.downcase)
+      result = @photos.select {|f|
+	 stat = false
+	 f.info.keys.each do |key|
+	    if (f.info[key].class == String &&
+		f.info[key].downcase.index(str.downcase)) then
+	       stat = true
+	       break
 	    end
-	 }
+	 end
+	 stat
       }
       return result
    end
