@@ -6,25 +6,19 @@
 <link rev="made" href="mailto:$EMAIL">
 <link rel="stylesheet" href="../default.css" type="text/css">
 <link rel="stylesheet" href="style.css" type="text/css">
-$link_chapter
-<title>$TITLE</title>
+<link rel="start" href="index.html">
+<link rel="contents" href="index.html">
+<title>検索: $keyword</title>
 </head>
 <body>
-<div class="last-update">最終更新時刻: $now</div>
-<h1>$TITLE</h1>
-<div class="search-form">
-<form action="p-search.cgi" method="GET">
-キーワード検索:
-<input type="text" name="keyword" value="" size="30">
-<input type="submit" value=" Search ">
-</form>
-</div>
-<h2>月別一覧</h2>
-<div class="monthly-list">
-$monthly_list
-</div>
-<h2>最近 $recent 日分</h2>
-$body
+<h1>検索: $keyword</h1>
+<p>
+$result 件ヒットしました。
+</p>
+<table>
+  <tr><th>写真</th><th>日付</th></tr>
+  $body
+</table>
 <hr>
 <address>
 $NAME<br>

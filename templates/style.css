@@ -19,6 +19,8 @@ div.last-update {
 /* font-style: italic;*/
 }
 
+div.search-form { text-align: center; }
+
 .datetime {
   margin-left: 10%;
 }
