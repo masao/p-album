@@ -4,7 +4,6 @@
 
 use strict;
 use IO::File;
-use File::Basename;
 use Image::Size qw(html_imgsize);
 
 # index.htmlで、最近 N 日分を表示するか
@@ -65,7 +64,7 @@ sub make_htmlpages(@) {
 	$param{'date'} = "$year-$month-$day";
 	$param{'time'} = "$hour:$min:$sec";
 	$param{'monthlyindex'} = "$year-$month.html";
-	$param{'image'} = basename($files[$i]);
+	$param{'image'} = $files[$i];
 	$param{'imagesize'} = html_imgsize($files[$i]);
 	if ($i == 0) {
 	    $param{'prev'} = "前の写真";
