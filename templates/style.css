@@ -13,7 +13,8 @@ h1 { text-align: center; }
 }
 
 div.image { text-align: center; }
-div.datetime { text-align: center; }
+
+p.datetime { text-align: center; }
 
 div.day-header {
   font-size: larger;
