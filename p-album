@@ -16,13 +16,18 @@ THUMBS_DIR = "thumbs"
 TEMPLATE_DIR = 'templates'
 
 # サムネール生成時の convert コマンドのオプション
-CONVERT_OPT = "-geometry '120x120>'"
+CONVERT_OPT = "-geometry '96x96>'"
 
 # 月名
 MONTHNAMES = [nil] + %w(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)
 
+# オプション指定
+Opt = {
+  'force_thumbs' => false	# サムネールを再生成する
+}
+
 def usage
-  print "  Usage: $0 dir\n"
+  print "  Usage: $0 [option]\n"
   exit
 end
 
@@ -66,7 +71,9 @@ def make_htmlpages(files)
   metadata = YAML.load( File.open("metadata.yaml") )
   files.each_index {|i|
     puts files[i]
-    make_thumbnail(files[i]) unless FileTest.exist?(thumbname(files[i]))
+    if FileTest.exist?(thumbname(files[i])) == false || Opt['force_thumbs']
+      make_thumbnail(files[i])
+    end
 
     param = metadata[files[i]]
     datetime = param['datetime']
@@ -178,6 +185,10 @@ def get_monthly_list (monthbody)
 end
 
 def main
+  while ARGV[0] =~ /^-/
+    optstr = ARGV.shift
+    Opt['force_thumbnail'] = true if optstr == "-f"
+  end
   files = find_photos()
   make_htmlpages(files)
   make_monthlypage(files)
