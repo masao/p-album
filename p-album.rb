@@ -79,9 +79,9 @@ class PhotoAlbum
 	    info[k].gsub!(/\[([^\]]+)\]/) {
 	       match = $1
 	       if match =~ /^(\d{4}-\d{2})-\d{2}$/ then
-		  "<a href=\"#{$1}.html##{match}\">[#{match}]</a>"
+		  "<a href=\"./#{$1}.html##{match}\">[#{match}]</a>"
 	       elsif match =~ /^(\d{4}-\d{2}-\d{2})[Tt ](\d{2}:\d{2}:\d{2})$/ then
-		  "<a href=\"#{$1}T#{$2}.html\">[#{match}]</a>"
+		  "<a href=\"./#{$1}T#{$2}.html\">[#{match}]</a>"
 	       elsif match =~ /^Cookpad:(\d+)$/i then
 		  "<a href=\"http://cookpad.com/recipe.cfm?RID=#{$1}\">[#{match}]</a>"
 	       else
