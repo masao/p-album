@@ -16,6 +16,7 @@
 
 ## ToDo:
 # 同一の時刻（秒単位）のファイルが既にある場合をどうするかは検討中…。
+# （とりあえず警告を出してスキップするようにしてある）
 
 require 'ftools'
 require 'exif'
@@ -48,15 +49,16 @@ def main
 
       new_fname = datetime.strftime("%Y-%m-%dT%H:%M:%S.jpg")
       if FileTest.exist?(new_fname) then
+	 new_fname += ".orig" if FileTest.exist?(new_fname + ".orig")
 	 unless File.cmp(orig_fname, new_fname) then
 	    print "(Skip: #{new_fname} already exist):\t#{orig_fname}\n"
 	 end
 	 next
       end
-      File.copy(orig_fname, new_fname)
+      File.copy(orig_fname, new_fname, true)
       stat = File.stat(orig_fname)
       File.utime(stat.atime, stat.mtime, new_fname)
-      puts new_fname
+      # puts new_fname
 
       yaml = YAML::Store.new("metadata.yaml", :SortKeys => true)
       yaml.transaction do
