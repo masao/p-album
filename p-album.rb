@@ -7,9 +7,6 @@ THUMBS_DIR = "thumbs"
 # サムネール生成時の convert コマンドのオプション
 CONVERT_OPT = "-geometry '96x96>' +profile '*'"
 
-# 月名
-MONTHNAMES = [nil] + %w(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)
-
 class ImageSize
    def html_imgsize
       return "width=\"#{get_width}\" height=\"#{get_height}\""
@@ -218,14 +215,19 @@ class PhotoAlbum
    def get_monthly_list (monthbody)
       result = ""
       prev_year = 0
-      monthbody.keys.sort.each do |m|
-	 year, month = m[0..3], m[5..6]
-	 if year != prev_year then	# year changed!
-	    result += "<br>\n" if prev_year != 0
-	    result += "#{year} : \n"
-	    prev_year = year
+      month_list = monthbody.keys.sort
+      start_year = month_list[0][0..3]
+      end_year = month_list[month_list.size-1][0..3]
+      (start_year .. end_year).each do |year|
+	 result += "#{year} : \n"
+	 ("01" .. "12").each do |month|
+	    if monthbody.has_key?("#{year}-#{month}")
+	       result += "<a href=\"#{year}-#{month}.html\">#{month}</a>\n"
+	    else
+	       result += "#{month}\n"
+	    end
 	 end
-	 result += "<a href=\"#{m}.html\">#{MONTHNAMES[month.to_i]}</a>\n"
+	 result += "<br>\n"
       end
       return result
    end
